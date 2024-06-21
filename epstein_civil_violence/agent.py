@@ -1,7 +1,6 @@
 import math
 
 import mesa
-import numpy as np
 
 
 class Citizen(mesa.Agent):
@@ -39,7 +38,6 @@ class Citizen(mesa.Agent):
         risk_aversion,
         threshold,
         vision,
-        alpha=0,
     ):
         """
         Create a new Citizen.
@@ -69,13 +67,6 @@ class Citizen(mesa.Agent):
         self.jail_sentence = 0
         self.grievance = self.hardship * (1 - self.regime_legitimacy)
         self.arrest_probability = None
-        self.alpha = alpha
-
-        # the sentence is calculated in the initialization to adjust for their net_risk.
-        mean_jail_term = self.model.max_jail_term / 2
-        std_dev = mean_jail_term / 3
-        jail_term = np.random.normal(mean_jail_term, std_dev)  # using normal distribution
-        self.jail_term = int(min(max(jail_term, 0), self.model.max_jail_term))
 
     def step(self):
         """
@@ -86,7 +77,7 @@ class Citizen(mesa.Agent):
             return  # no other changes or movements if agent is in jail.
         self.update_neighbors()
         self.update_estimated_arrest_probability()
-        net_risk = self.risk_aversion * self.arrest_probability * ((1+self.jail_term/self.model.max_jail_term) ** self.alpha)
+        net_risk = self.risk_aversion * self.arrest_probability
         if self.grievance - net_risk > self.threshold:
             self.condition = "Active"
         else:
@@ -169,8 +160,8 @@ class Cop(mesa.Agent):
                 active_neighbors.append(agent)
         if active_neighbors:
             arrestee = self.random.choice(active_neighbors)
-            # sentence = self.random.randint(0, self.model.max_jail_term)
-            arrestee.jail_sentence = arrestee.jail_term
+            sentence = self.random.randint(0, self.model.max_jail_term)
+            arrestee.jail_sentence = sentence
             arrestee.condition = "Quiescent"
         if self.model.movement and self.empty_neighbors:
             new_pos = self.random.choice(self.empty_neighbors)
