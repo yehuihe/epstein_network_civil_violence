@@ -6,18 +6,17 @@ from epstein_civil_violence.agent import Citizen, Cop
 class Inhabitant(Citizen):
 
     def __init__(
-        self,
-        unique_id,
-        model,
-        pos,
-        hardship,
-        regime_legitimacy,
-        risk_aversion,
-        threshold,
-        vision,
-        alpha,
-        rumor_effect,
-        pretense = False,
+            self,
+            unique_id,
+            model,
+            pos,
+            hardship,
+            regime_legitimacy,
+            risk_aversion,
+            threshold,
+            vision,
+            alpha,
+            rumor_effect,
     ):
         """
         Create a new Inhabitant.
@@ -35,12 +34,14 @@ class Inhabitant(Citizen):
                 agent can inspect. Exogenous.
             model: model instance
             alpha: Deterrent effect.
-            rumor_effect: Network rumor effect posed by active agents. 
+            rumor_effect: Network rumor effect posed by active agents.
+            cops_in_vision: number of cops in the vision.
+            actives_in_vision: number of active agents in the vision.
         """
 
         super().__init__(
-            unique_id, 
-            model, 
+            unique_id,
+            model,
             pos,
             hardship,
             regime_legitimacy,
@@ -54,7 +55,6 @@ class Inhabitant(Citizen):
         self.arrest_probability = None
         self.alpha = alpha
         self.rumor_effect = rumor_effect
-        self.pretense = pretense
         self.cops_in_vision = 0
         self.actives_in_vision = 0
 
@@ -67,14 +67,11 @@ class Inhabitant(Citizen):
         actives_in_vision = 1.0  # citizen counts herself
         for c in self.neighbors:
             if (
-                c.breed == "citizen"
-                and c.condition == "Active"
-                and c.jail_sentence == 0
+                    c.breed == "citizen"
+                    and c.condition == "Active"
+                    and c.jail_sentence == 0
             ):
                 actives_in_vision += 1
-        print("###############")
-        print(self.pos)
-        print(actives_in_vision, cops_in_vision)
         self.arrest_probability = 1 - math.exp(
             -1 * self.model.arrest_prob_constant * (cops_in_vision / actives_in_vision)
         )
@@ -90,18 +87,16 @@ class Inhabitant(Citizen):
             return  # no other changes or movements if agent is in jail.
         self.update_neighbors()
         self.update_estimated_arrest_probability()
-        print(self.arrest_probability)
         net_risk = self.risk_aversion * self.arrest_probability * self.jail_sentence ** self.alpha
+
         if self.condition == "Quiescent":
             if self.grievance - net_risk > self.threshold and self.actives_in_vision >= (1 * self.cops_in_vision):
-            # if self.grievance - net_risk > self.threshold:
                 self.condition = "Active"
             else:
                 self.condition = "Quiescent"
         else:
             if self.grievance - net_risk < self.threshold or self.cops_in_vision >= 1:
                 self.condition = "Quiescent"
-
 
         if self.model.movement and self.empty_neighbors:
             new_pos = self.random.choice(self.empty_neighbors)
@@ -129,8 +124,7 @@ class Police(Cop):
                 active_neighbors.append(agent)
         if active_neighbors:
             arrestee = self.random.choice(active_neighbors)
-            # print(arrestee.arrest_probability)
-            if self.random.random()<arrestee.arrest_probability:
+            if self.random.random() < arrestee.arrest_probability:
                 sentence = self.random.randint(0, self.model.max_jail_term)
                 arrestee.jail_sentence = sentence
                 arrestee.condition = "Quiescent"
