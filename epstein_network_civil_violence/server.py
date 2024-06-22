@@ -1,7 +1,6 @@
 import mesa
-
-from .agent import Citizen, Cop
-from .model import EpsteinCivilViolence
+from agent import Citizen, Cop
+from model import EpsteinCivilViolence
 
 COP_COLOR = "#000000"
 AGENT_QUIET_COLOR = "#648FFF"
@@ -21,7 +20,7 @@ def citizen_cop_portrayal(agent):
         "Filled": "true",
     }
 
-    if type(agent) is Citizen:
+    if isinstance(agent, Citizen):
         color = (
             AGENT_QUIET_COLOR if agent.condition == "Quiescent" else AGENT_REBEL_COLOR
         )
@@ -37,7 +36,7 @@ def citizen_cop_portrayal(agent):
             portrayal["Filled"] = "false"
         portrayal["Layer"] = 0
 
-    elif type(agent) is Cop:
+    elif isinstance(agent, Cop):
         portrayal["Color"] = COP_COLOR
         portrayal["r"] = 0.9
         portrayal["Layer"] = 1
@@ -79,3 +78,6 @@ server = mesa.visualization.ModularServer(
     "Epstein Civil Violence",
     model_params,
 )
+
+if __name__ == "__main__":
+    server.launch()
