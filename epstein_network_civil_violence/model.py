@@ -1,4 +1,7 @@
-from ..epstein_civil_violence.model import EpsteinCivilViolence
+import mesa
+ 
+from epstein_civil_violence.model import EpsteinCivilViolence
+from .agent import Inhabitant, Police
 
 
 class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
@@ -88,12 +91,12 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             raise ValueError("Cop density + citizen density must be less than 1")
         for contents, (x, y) in self.grid.coord_iter():
             if self.random.random() < self.cop_density:
-                cop = Cop(unique_id, self, (x, y), vision=self.cop_vision)
+                cop = Police(unique_id, self, (x, y), vision=self.cop_vision)
                 unique_id += 1
                 self.grid[x][y] = cop
                 self.schedule.add(cop)
             elif self.random.random() < (self.cop_density + self.citizen_density):
-                citizen = Citizen(
+                citizen = Inhabitant(
                     unique_id,
                     self,
                     (x, y),

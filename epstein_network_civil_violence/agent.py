@@ -1,4 +1,4 @@
-from ..epstein_civil_violence.agent import Citizen, Cop 
+from epstein_civil_violence.agent import Citizen, Cop 
 
 
 class Inhabitant(Citizen):
@@ -72,6 +72,7 @@ class Inhabitant(Citizen):
 
     def spreading_rumor(self):
         # TODO
+        pass
 
 
 class Police(Cop):

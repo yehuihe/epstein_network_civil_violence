@@ -1,5 +1,6 @@
 import mesa
 
+# from epstein_network_civil_violence.epstein_civil_violence.agent import Cop
 from .agent import Inhabitant, Police
 from .model import EpsteinNetworkCivilViolence
 
@@ -21,7 +22,7 @@ def citizen_cop_portrayal(agent):
         "Filled": "true",
     }
 
-    if type(agent) is Citizen:
+    if type(agent) is Inhabitant:
         color = (
             AGENT_QUIET_COLOR if agent.condition == "Quiescent" else AGENT_REBEL_COLOR
         )
@@ -37,7 +38,7 @@ def citizen_cop_portrayal(agent):
             portrayal["Filled"] = "false"
         portrayal["Layer"] = 0
 
-    elif type(agent) is Cop:
+    elif type(agent) is Police:
         portrayal["Color"] = COP_COLOR
         portrayal["r"] = 0.9
         portrayal["Layer"] = 1
@@ -73,7 +74,7 @@ chart = mesa.visualization.ChartModule(
     data_collector_name="datacollector",
 )
 server = mesa.visualization.ModularServer(
-    EpsteinCivilViolence,
+    EpsteinNetworkCivilViolence,
     [
         canvas_element,
         chart,
