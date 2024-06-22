@@ -1,7 +1,7 @@
 import mesa
 
-from .agent import Citizen, Cop
-from .model import EpsteinCivilViolence
+from .agent import Inhabitant, Police
+from .model import EpsteinNetworkCivilViolence
 
 COP_COLOR = "#000000"
 AGENT_QUIET_COLOR = "#648FFF"
@@ -60,6 +60,8 @@ model_params = {
         "Government Legitimacy", 0.82, 0.0, 1, 0.01
     ),
     "max_jail_term": mesa.visualization.Slider("Max Jail Term", 30, 0, 50, 1),
+    "alpha": mesa.visualization.Slider("Alpha", 0.1, 0, 0.5, 0.1),
+    "rumor_effect": mesa.visualization.Slider("Rumor Effect", 0.01, 0, 0.05, 0.01),
 }
 canvas_element = mesa.visualization.CanvasGrid(citizen_cop_portrayal, 40, 40, 480, 480)
 chart = mesa.visualization.ChartModule(
