@@ -66,11 +66,13 @@ class Citizen(mesa.Agent):
         self.jail_sentence = 0
         self.grievance = self.hardship * (1 - self.regime_legitimacy)
         self.arrest_probability = None
+        self.influence_count = 0  # To track the number of agents influenced in a tick
 
     def step(self):
         """
         Decide whether to activate, then move if applicable.
         """
+        self.influence_count = 0  # Reset influence count at each step
         if self.jail_sentence:
             self.jail_sentence -= 1
             if self.jail_sentence == 0:
@@ -119,22 +121,33 @@ class Citizen(mesa.Agent):
         )
 
     def adjust_grievance_post_jail(self):
-        # adjust based on jailotime
-        if self.jail_sentence <5:
-            self.grievance *=1.2  # shorter time in jail increases grievance
+        # Adjust grievance based on time in jail
+        if self.jail_sentence < 3:
+            self.grievance *= 1.3  # Short time in jail increases grievance
         else:
-            self.grievance *= 0.8  # Long time in jail decreases grievance
-            #print(f"Agent {self.unique_id} adjusted grievance to {self.grievance} after jail")
+            self.grievance *= 0.7  # Long time in jail decreases grievance
+        print(f"Agent {self.unique_id} adjusted grievance to {self.grievance} after jail")
 
     def spread_negative_sentiment(self):
-        #spread negative sentiment to connected nodes
-        neighbors = self.model.grid.get_neighbors(self.pos, moore=True,radius=1)
+        # Spread negative sentiment to connected nodes
+        neighbors = self.model.grid.get_neighbors(self.pos, moore=True, radius=1)
         for neighbor in neighbors:
             if isinstance(neighbor, Citizen) and neighbor.condition == "Quiescent":
                 if self.random.random() < 0.1:  # 10% chance to influence
                     old_legitimacy = neighbor.regime_legitimacy
                     neighbor.regime_legitimacy *= 0.95  # Decrease regime legitimacy
-                    #print(f"Agent {self.unique_id} influenced neighbor {neighbor.unique_id} regime legitimacy from {old_legitimacy} to {neighbor.regime_legitimacy}")
+                    print(f"Agent {self.unique_id} influenced neighbor {neighbor.unique_id} regime legitimacy from {old_legitimacy} to {neighbor.regime_legitimacy}")
+                    self.influence_count += 1
+
+        # Check if the influence count exceeds the threshold
+        if self.influence_count > 5:
+            self.trigger_arrest()
+
+    def trigger_arrest(self):
+        # Trigger arrest for being too influential
+        self.jail_sentence = self.random.randint(1, self.model.max_jail_term)
+        self.condition = "Quiescent"
+        print(f"Agent {self.unique_id} was too influential and got arrested")
 
 
 class Cop(mesa.Agent):

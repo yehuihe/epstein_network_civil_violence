@@ -9,7 +9,7 @@ def run_simulation():
     citizen_density = 0.7
     cop_density = 0.04
     citizen_vision = 7
-    cop_vision = 2
+    cop_vision = 7
     legitimacy = 0.6
     max_jail_term = 15
     active_threshold = 0.1
@@ -34,8 +34,8 @@ def run_simulation():
     )
 
     for i in range(max_iters):
+        print(f"Step {i + 1}")
         model.step()
-
 
     # Print or analyze results
     # For instance, printing the final count of quiescent, active, and jailed citizens
