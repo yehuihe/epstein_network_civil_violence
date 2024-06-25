@@ -61,8 +61,10 @@ model_params = {
         "Government Legitimacy", 0.82, 0.0, 1, 0.01
     ),
     "max_jail_term": mesa.visualization.Slider("Max Jail Term", 30, 0, 50, 1),
-    "alpha": mesa.visualization.Slider("Alpha", 0.1, 0, 0.5, 0.1),
-    "rumor_effect": mesa.visualization.Slider("Rumor Effect", 0.01, 0, 0.05, 0.01),
+    "alpha": mesa.visualization.Slider("Alpha", 0.1, 0.0, 0.5, 0.1),
+    "jail_factor": mesa.visualization.Slider("Jail Factor", 1.1, 1.0, 1.5, 0.1), 
+    "legitimacy_impact": mesa.visualization.Slider("Legitimacy Impact", 0.01, 0.0, 0.05, 0.01),
+    "incitation_threshold": mesa.visualization.Slider("Incitation Threshold", 10, 0.0, 100, 10),
 }
 canvas_element = mesa.visualization.CanvasGrid(citizen_cop_portrayal, 40, 40, 480, 480)
 chart = mesa.visualization.ChartModule(
@@ -79,6 +81,6 @@ server = mesa.visualization.ModularServer(
         canvas_element,
         chart,
     ],
-    "Epstein Civil Violence",
+    "Epstein Network Civil Violence",
     model_params,
 )

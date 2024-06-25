@@ -47,7 +47,9 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         movement=True,
         max_iters=1000,
         alpha=0.1,
-        rumor_effect=0.01,  
+        jail_factor=1.1,
+        legitimacy_impact=0.01,
+        incitation_threshold=10,
     ):
         super().__init__(
             width,
@@ -67,7 +69,9 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.schedule = mesa.time.RandomActivation(self)
         self.grid = mesa.space.SingleGrid(width, height, torus=True)
         self.alpha = alpha
-        self.rumor_effect = rumor_effect
+        self.jail_factor = jail_factor
+        self.legitimacy_impact = legitimacy_impact
+        self.incitation_threshold = incitation_threshold
         
         model_reporters = {
             "Quiescent": lambda m: self.count_type_citizens(m, "Quiescent"),
@@ -106,7 +110,9 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
                     threshold=self.active_threshold,
                     vision=self.citizen_vision,
                     alpha=self.alpha,
-                    rumor_effect=self.rumor_effect,
+                    jail_factor=self.jail_factor,
+                    legitimacy_impact=self.legitimacy_impact,
+                    incitation_threshold=self.incitation_threshold,
                 )
                 unique_id += 1
                 self.grid[x][y] = citizen
