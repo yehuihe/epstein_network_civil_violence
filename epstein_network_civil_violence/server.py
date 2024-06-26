@@ -62,7 +62,7 @@ model_params = {
     ),
     "max_jail_term": mesa.visualization.Slider("Max Jail Term", 30, 0, 50, 1),
     "alpha": mesa.visualization.Slider("Alpha", 0.1, 0, 0.5, 0.1),
-    "rumor_effect": mesa.visualization.Slider("Rumor Effect", 0.01, 0, 0.05, 0.01),
+    # "rumor_effect": mesa.visualization.Slider("Rumor Effect", 0.01, 0, 0.05, 0.01),
 }
 canvas_element = mesa.visualization.CanvasGrid(citizen_cop_portrayal, 40, 40, 480, 480)
 chart = mesa.visualization.ChartModule(
