@@ -48,6 +48,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         max_iters=1000,
         alpha=0.1,
         jail_factor=1.1,
+        impact_chance=0.5,
         legitimacy_impact=0.01,
         incitation_threshold=10,
     ):
@@ -70,6 +71,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.grid = mesa.space.SingleGrid(width, height, torus=True)
         self.alpha = alpha
         self.jail_factor = jail_factor
+        self.impact_chance = impact_chance
         self.legitimacy_impact = legitimacy_impact
         self.incitation_threshold = incitation_threshold
         
@@ -111,6 +113,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
                     vision=self.citizen_vision,
                     alpha=self.alpha,
                     jail_factor=self.jail_factor,
+                    impact_chance = self.impact_chance,
                     legitimacy_impact=self.legitimacy_impact,
                     incitation_threshold=self.incitation_threshold,
                 )

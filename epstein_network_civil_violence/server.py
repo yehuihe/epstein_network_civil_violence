@@ -62,7 +62,8 @@ model_params = {
     ),
     "max_jail_term": mesa.visualization.Slider("Max Jail Term", 30, 0, 50, 1),
     "alpha": mesa.visualization.Slider("Alpha", 0.1, 0.0, 0.5, 0.1),
-    "jail_factor": mesa.visualization.Slider("Jail Factor", 1.1, 1.0, 1.5, 0.1), 
+    "jail_factor": mesa.visualization.Slider("Jail Factor", 1.1, 1.0, 1.5, 0.1),
+    "impact_chance": mesa.visualization.Slider("Impact Chance", 0.5, 0.1, 1.0, 0.1),
     "legitimacy_impact": mesa.visualization.Slider("Legitimacy Impact", 0.01, 0.0, 0.05, 0.01),
     "incitation_threshold": mesa.visualization.Slider("Incitation Threshold", 10, 0.0, 100, 10),
 }

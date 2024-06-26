@@ -15,6 +15,7 @@ class Inhabitant(Citizen):
         vision,
         alpha,
         jail_factor,
+        impact_chance,
         legitimacy_impact,
         incitation_threshold,
     ):
@@ -54,6 +55,7 @@ class Inhabitant(Citizen):
         self.arrest_probability = None
         self.alpha = alpha
         self.jail_factor = jail_factor
+        self.impact_chance = impact_chance
         self.legitimacy_impact = legitimacy_impact
         self.incitation_num = 0
         self.incitation_threshold = incitation_threshold
@@ -86,20 +88,21 @@ class Inhabitant(Citizen):
             self.model.grid.move_agent(self, new_pos)
 
     def update_grievance_leave_jail(self):
-        print('grievance_before_jail: ' + str(self.grievance))
+        # print('grievance_before_jail: ' + str(self.grievance))
         self.grievance *= self.jail_factor
-        print('update_grievance_leave_jail: ' + str(self.grievance))
+        # print('update_grievance_leave_jail: ' + str(self.grievance))
 
     def incite_grievance(self):
         quiescent_neighbors = []
         for agent in self.neighbors:
             if agent.breed == "citizen" and agent.condition == "Quiescent":
                 quiescent_neighbors.append(agent)
-        if quiescent_neighbors:
+        if quiescent_neighbors and self.random.randrange(0, 1.0) < self.impact_chance:
             influencee = self.random.choice(quiescent_neighbors)
-            influencee.regime_legitimacy -= self.legitimacy_impact
-            self.incitation_num += 1
-            print('incite_grievance')
+            if influencee.regime_legitimacy > 0.2:  # minium regime legitimacy cannot be under 0.2
+                influencee.regime_legitimacy -= self.legitimacy_impact
+                self.incitation_num += 1
+                # print('incite_grievance')
                 
 
 class Police(Cop):
