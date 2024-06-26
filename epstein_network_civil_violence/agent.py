@@ -1,3 +1,5 @@
+import math
+
 from epstein_civil_violence.agent import Citizen, Cop
 
 
@@ -59,6 +61,28 @@ class Inhabitant(Citizen):
         self.legitimacy_impact = legitimacy_impact
         self.incitation_num = 0
         self.incitation_threshold = incitation_threshold
+        self.cops_in_vision = 0
+        self.actives_in_vision = 0
+
+    def update_estimated_arrest_probability(self):
+        """
+        Based on the ratio of cops to actives in my neighborhood, estimate the
+        p(Arrest | I go active).
+        """
+        cops_in_vision = len([c for c in self.neighbors if c.breed == "cop"])
+        actives_in_vision = 1.0  # citizen counts herself
+        for c in self.neighbors:
+            if (
+                    c.breed == "citizen"
+                    and c.condition == "Active"
+                    and c.jail_sentence == 0
+            ):
+                actives_in_vision += 1
+        self.arrest_probability = 1 - math.exp(
+            -1 * self.model.arrest_prob_constant * (cops_in_vision / actives_in_vision)
+        )
+        self.cops_in_vision = cops_in_vision
+        self.actives_in_vision = actives_in_vision
 
     def step(self):
         """
@@ -71,13 +95,21 @@ class Inhabitant(Citizen):
             return  # no other changes or movements if agent is in jail.
         self.update_neighbors()
         self.update_estimated_arrest_probability()
+
+
         net_risk = self.risk_aversion * self.arrest_probability * self.random.randint(0,
-                                                                                      self.model.max_jail_term) ** self.alpha
-        if self.grievance - net_risk > self.threshold:
-            self.condition = "Active"
-            self.incite_grievance()
+                                                                                      self.model.max_jail_term) ** self.alpha - 0.3
+
+        if self.condition == "Quiescent":
+            if self.grievance - net_risk > self.threshold and self.actives_in_vision >= (2 * self.cops_in_vision):
+                self.condition = "Active"
+                self.incite_grievance()
+            else:
+                self.condition = "Quiescent"
         else:
-            self.condition = "Quiescent"
+            if self.grievance - net_risk < self.threshold or self.cops_in_vision >= 1:
+                self.condition = "Quiescent"
+
         # making arrest if incitation number greater than threshold
         if self.incitation_num > self.incitation_threshold:
             sentence = self.random.randint(0, self.model.max_jail_term)
@@ -122,3 +154,27 @@ class Police(Cop):
         self.breed = "cop"
         # self.pos = pos
         # self.vision = vision
+
+    def step(self):
+        """
+        Inspect local vision and arrest a random active agent. Move if
+        applicable.
+        """
+        self.update_neighbors()
+        active_neighbors = []
+        for agent in self.neighbors:
+            if (
+                    agent.breed == "citizen"
+                    and agent.condition == "Active"
+                    and agent.jail_sentence == 0
+            ):
+                active_neighbors.append(agent)
+        if active_neighbors:
+            arrestee = self.random.choice(active_neighbors)
+            if self.random.random() < arrestee.arrest_probability:
+                sentence = self.random.randint(0, self.model.max_jail_term)
+                arrestee.jail_sentence = sentence
+                arrestee.condition = "Quiescent"
+        if self.model.movement and self.empty_neighbors:
+            new_pos = self.random.choice(self.empty_neighbors)
+            self.model.grid.move_agent(self, new_pos)
