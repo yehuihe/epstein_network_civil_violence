@@ -5,8 +5,8 @@ nest_asyncio.apply()
 import mesa
 
 from epstein_civil_violence.model import EpsteinCivilViolence
-from .agent import Inhabitant
-from .agent import Police
+from epstein_network_civil_violence.agent import Inhabitant
+from epstein_network_civil_violence.agent import Police
 
 class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
     """
@@ -54,7 +54,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             alpha=0.1,
             jail_factor=1.1,
             impact_chance=0.5,
-            legitimacy_impact=0.01,
+            legitimacy_impact=0.2,
             incitation_threshold=10,
             cop_density_mode='constant',  # Parameter to select the change mode of cop density (constant, gradual)
             legitimacy_mode='constant'  # Parameter to select the change mode of legitimacy (constant, gradual, drop)
@@ -144,10 +144,9 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.datacollector.collect(self)
 
     def step(self):
-        super().step()
         active_count = self.count_type_citizens(self,
                                                 "Active")  # Define and calculate the current number of active citizens
-        print(f"Active Count: {active_count}")
+        # print(f"Active Count: {active_count}")
 
         if self.iteration == 300 and self.legitimacy_mode == 'drop':
             self.legitimacy = max(0, self.legitimacy - 0.3)

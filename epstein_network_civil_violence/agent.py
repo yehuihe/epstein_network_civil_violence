@@ -63,6 +63,16 @@ class Inhabitant(Citizen):
         self.incitation_threshold = incitation_threshold
         self.cops_in_vision = 0
         self.actives_in_vision = 0
+        self.empty_neighbors = None
+
+    def update_next_neighbors(self):
+        next_neighbors = self.model.grid.get_neighbors(
+            self.pos, moore=True, radius=1
+        )
+
+        self.closed_neighbors = [neighbor for neighbor in next_neighbors
+                              if neighbor.breed == "citizen"]
+
 
     def update_estimated_arrest_probability(self):
         """
@@ -88,14 +98,23 @@ class Inhabitant(Citizen):
         """
         Decide whether to activate, then move if applicable.
         """
+        self.update_neighbors()
+        if self.model.movement and self.empty_neighbors:
+            new_pos = self.random.choice(self.empty_neighbors)
+            self.model.grid.move_agent(self, new_pos)
+        self.update_neighbors()
+        self.update_next_neighbors()
+        self.update_estimated_arrest_probability()
+
+        # self.mean_field_spread()
+
         if self.jail_sentence:
             self.jail_sentence -= 1
             if self.jail_sentence == 0:
                 self.update_grievance_leave_jail()
-            return  # no other changes or movements if agent is in jail.
-        self.update_neighbors()
-        self.update_estimated_arrest_probability()
 
+            return  # no other changes or movements if agent is in jail.
+        self.grievance = self.hardship * (1 - self.regime_legitimacy)
 
         net_risk = self.risk_aversion * self.arrest_probability * self.random.randint(0,
                                                                                       self.model.max_jail_term) ** self.alpha - 0.3
@@ -103,7 +122,6 @@ class Inhabitant(Citizen):
         if self.condition == "Quiescent":
             if self.grievance - net_risk > self.threshold and self.actives_in_vision >= (2 * self.cops_in_vision):
                 self.condition = "Active"
-                self.incite_grievance()
             else:
                 self.condition = "Quiescent"
         else:
@@ -116,26 +134,23 @@ class Inhabitant(Citizen):
             self.jail_sentence = sentence
             self.condition = "Quiescent"
             self.incitation_num = 0
-        if self.model.movement and self.empty_neighbors:
-            new_pos = self.random.choice(self.empty_neighbors)
-            self.model.grid.move_agent(self, new_pos)
 
     def update_grievance_leave_jail(self):
-        # print('grievance_before_jail: ' + str(self.grievance))
         self.grievance *= self.jail_factor
-        # print('update_grievance_leave_jail: ' + str(self.grievance))
 
-    def incite_grievance(self):
-        quiescent_neighbors = []
-        for agent in self.neighbors:
-            if agent.breed == "citizen" and agent.condition == "Quiescent":
-                quiescent_neighbors.append(agent)
-        if quiescent_neighbors and self.random.randrange(0, 1.0) < self.impact_chance:
-            influencee = self.random.choice(quiescent_neighbors)
-            if influencee.regime_legitimacy > 0.2:  # minium regime legitimacy cannot be under 0.2
-                influencee.regime_legitimacy -= self.legitimacy_impact
-                self.incitation_num += 1
-                # print('incite_grievance')
+    def mean_field_spread(self):
+        if not self.closed_neighbors:
+            return
+
+        # Calculate the average regime_legitimacy of the surrounding neighbors
+        total_legitimacy = sum(neighbor.regime_legitimacy for neighbor in self.closed_neighbors)
+        mean_legitimacy = total_legitimacy / len(self.closed_neighbors)
+
+        # Adjust its own regime_legitimacy based on the average regime_legitimacy and its own legitimacy_impact
+        self.regime_legitimacy += self.legitimacy_impact * (mean_legitimacy - self.regime_legitimacy)
+
+        # Ensure that regime_legitimacy is between 0 and 1
+        self.regime_legitimacy = max(0, min(1, self.regime_legitimacy))
 
 
 class Police(Cop):
