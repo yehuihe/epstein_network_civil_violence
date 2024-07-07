@@ -124,6 +124,58 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.running = True
         self.datacollector.collect(self)
 
+    def step(self):
+        self.datacollector.collect(self)
+        
+        for agent in self.schedule.agents:
+            if isinstance(agent, Inhabitant) and agent.condition == "Active":
+                neighbors = self.grid.get_neighbors(agent.pos, moore=True, include_center=False)
+                quiescent_neighbors = [neighbor for neighbor in neighbors if isinstance(neighbor, Inhabitant) and neighbor.condition == "Quiescent"]
+                if quiescent_neighbors:
+                    influenced_agent = self.random.choice(quiescent_neighbors)
+                    if self.random.random() < agent.impact_chance:
+                        influenced_agent.grievance += agent.legitimacy_impact
+                        if influenced_agent.grievance - (influenced_agent.risk_aversion * influenced_agent.arrest_probability) > influenced_agent.threshold:
+                            influenced_agent.condition = "Active"
+        
+        self.schedule.step()
+
+    @staticmethod
+    def count_type_citizens(model, condition, exclude_jailed=True):
+        """
+        Helper method to count agents by Quiescent/Active.
+        """
+        count = 0
+        for agent in model.schedule.agents:
+            if agent.breed == "cop":
+                continue
+            if exclude_jailed and agent.jail_sentence > 0:
+                continue
+            if agent.condition == condition:
+                count += 1
+        return count
+
+    @staticmethod
+    def count_jailed(model):
+        """
+        Helper method to count jailed agents.
+        """
+        count = 0
+        for agent in model.schedule.agents:
+            if agent.breed == "citizen" and agent.jail_sentence > 0:
+                count += 1
+        return count
+
+    @staticmethod
+    def count_cops(model):
+        """
+        Helper method to count jailed agents.
+        """
+        count = 0
+        for agent in model.schedule.agents:
+            if agent.breed == "cop":
+                count += 1
+        return count
     
 
 
