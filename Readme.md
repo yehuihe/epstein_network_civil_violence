@@ -1,10 +1,34 @@
 # Epstein Network Civil Violence Model
 
 ## Installation
-
+### Clone the Repository
+```bash
+git clone https://github.com/yehuihe/epstein_network_civil_violence.git
+cd epstein_network_civil_violence
+```
 ### Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-(venv) $ pip install -r requirements.txt
+## Execution
+### Run the Simulation
+To start the simulation, execute:
+```bash
+python run_network.py
+```
+
+### Plotting
+To generate plots, open and run all cells in the Jupyter notebook:
+```bash
+jupyter notebook "plot(final version).ipynb"
+```
+
+### Global Sensitivity Analysis
+To perform global sensitivity analysis, open and run all cells in the Jupyter notebook:
+```bash
+jupyter notebook GSA.ipynb
+```
 
 ## Summary
 
