@@ -1,8 +1,8 @@
 import mesa
 
 # from epstein_network_civil_violence.epstein_civil_violence.agent import Cop
-from .agent import Inhabitant, Police
-from .model import EpsteinNetworkCivilViolence
+from agent import Inhabitant, Police
+from model import EpsteinNetworkCivilViolence
 
 COP_COLOR = "#000000"
 AGENT_QUIET_COLOR = "#648FFF"
@@ -85,3 +85,5 @@ server = mesa.visualization.ModularServer(
     "Epstein Network Civil Violence",
     model_params,
 )
+
+server.launch()
