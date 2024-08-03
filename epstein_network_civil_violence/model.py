@@ -92,6 +92,11 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.outburst_sizes = []  # Store the size of each outburst
         self.current_outburst_size = 0  # Track the size of the current outburst
 
+        if use_mean_field == 1:
+            use_mean_field = True
+        if use_mean_field == 0:
+            use_mean_field = False
+
         model_reporters = {
             "Quiescent": lambda m: self.count_type_citizens(m, "Quiescent"),
             "Active": lambda m: self.count_type_citizens(m, "Active"),
