@@ -53,9 +53,11 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             max_iters=1000,
             alpha=0.1,
             jail_factor=1.1,
-            impact_chance=0.5,
+            # impact_chance=0.5,
             legitimacy_impact=0.2,
-            incitation_threshold=10,
+            # incitation_threshold=10,
+            use_mean_field = True,
+            legitimacy_width = 0.1,
             cop_density_mode='constant',  # Parameter to select the change mode of cop density (constant, gradual)
             legitimacy_mode='constant'  # Parameter to select the change mode of legitimacy (constant, gradual, drop)
 
@@ -79,9 +81,9 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.grid = mesa.space.SingleGrid(width, height, torus=True)
         self.alpha = alpha
         self.jail_factor = jail_factor
-        self.impact_chance = impact_chance
+        # self.impact_chance = impact_chance
         self.legitimacy_impact = legitimacy_impact
-        self.incitation_threshold = incitation_threshold
+        # self.incitation_threshold = incitation_threshold
         self.cop_density_mode = cop_density_mode  # Store the cop density change mode
         self.legitimacy_mode = legitimacy_mode  # Store the legitimacy change mode
         self.active_outburst = False  # Indicates if an outburst is currently happening
@@ -132,9 +134,11 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
                     vision=self.citizen_vision,
                     alpha=self.alpha,
                     jail_factor=self.jail_factor,
-                    impact_chance = self.impact_chance,
+                    # impact_chance = self.impact_chance,
                     legitimacy_impact=self.legitimacy_impact,
-                    incitation_threshold=self.incitation_threshold,
+                    # incitation_threshold=self.incitation_threshold,
+                    use_mean_field=use_mean_field,
+                    legitimacy_width=legitimacy_width
                 )
                 unique_id += 1
                 self.grid[x][y] = citizen

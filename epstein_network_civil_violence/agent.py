@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 from epstein_civil_violence.agent import Citizen, Cop
 
@@ -18,9 +19,11 @@ class Inhabitant(Citizen):
             vision,
             alpha,
             jail_factor,
-            impact_chance,
+            # impact_chance,
             legitimacy_impact,
-            incitation_threshold,
+            # incitation_threshold,
+            use_mean_field,
+            legitimacy_width=0.1
     ):
         """
         Create a new Inhabitant.
@@ -58,14 +61,19 @@ class Inhabitant(Citizen):
         self.arrest_probability = None
         self.alpha = alpha
         self.jail_factor = jail_factor
-        self.impact_chance = impact_chance
+        # self.impact_chance = impact_chance
         self.legitimacy_impact = legitimacy_impact
         self.incitation_num = 0
-        self.incitation_threshold = incitation_threshold
+        # self.incitation_threshold = incitation_threshold
+        self.use_mean_field = use_mean_field
 
         self.cops_in_vision = 0
         self.actives_in_vision = 0
         self.empty_neighbors = None
+
+        #     if use mean field, then randomlize the regime_legitimacy
+        if use_mean_field:
+            self.regime_legitimacy = np.random.uniform(regime_legitimacy - legitimacy_width, regime_legitimacy + legitimacy_width)
 
     def update_next_neighbors(self):
         next_neighbors = self.model.grid.get_neighbors(
@@ -112,7 +120,8 @@ class Inhabitant(Citizen):
         self.update_next_neighbors()
         self.update_estimated_arrest_probability()
 
-        self.mean_field_spread()
+        if self.use_mean_field:
+            self.mean_field_spread()
 
         self.grievance = self.hardship * (1 - self.regime_legitimacy)
 
@@ -167,19 +176,6 @@ class Inhabitant(Citizen):
 
         # Ensure that regime_legitimacy is between 0 and 1
         self.regime_legitimacy = max(0, min(1, self.regime_legitimacy))
-
-    def incite_grievance(self):
-        quiescent_neighbors = []
-        for agent in self.neighbors:
-            if agent.breed == "citizen" and agent.condition == "Quiescent":
-                quiescent_neighbors.append(agent)
-        if quiescent_neighbors and self.random.randrange(0, 1.0) < self.impact_chance:
-            influencee = self.random.choice(quiescent_neighbors)
-            if influencee.regime_legitimacy > 0.2:  # minium regime legitimacy cannot be under 0.2
-                influencee.regime_legitimacy -= self.legitimacy_impact
-                self.incitation_num += 1
-                # print('incite_grievance')
-                
 
 class Police(Cop):
     def __init__(self, unique_id, model, pos, vision):
