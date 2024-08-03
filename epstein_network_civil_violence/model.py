@@ -114,6 +114,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             "jail_sentence": lambda a: getattr(a, "jail_sentence", None),
             "condition": lambda a: getattr(a, "condition", None),
             "arrest_probability": lambda a: getattr(a, "arrest_probability", None),
+            "regime_legitimacy": lambda a: getattr(a, "regime_legitimacy", None),
         }
         self.datacollector = mesa.DataCollector(
             model_reporters=model_reporters, agent_reporters=agent_reporters
