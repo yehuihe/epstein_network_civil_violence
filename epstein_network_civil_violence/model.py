@@ -56,8 +56,9 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             # impact_chance=0.5,
             legitimacy_impact=0.2,
             # incitation_threshold=10,
-            use_mean_field = True,
-            legitimacy_width = 0.1,
+            legitimacy_heterogeneity=True,
+            use_mean_field=True,
+            legitimacy_width=0.1,
             cop_density_mode='constant',  # Parameter to select the change mode of cop density (constant, gradual)
             legitimacy_mode='constant'  # Parameter to select the change mode of legitimacy (constant, gradual, drop)
 
@@ -91,6 +92,11 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.waiting_times = []  # List to store waiting times
         self.outburst_sizes = []  # Store the size of each outburst
         self.current_outburst_size = 0  # Track the size of the current outburst
+
+        if legitimacy_heterogeneity == 1:
+            legitimacy_heterogeneity = True
+        if legitimacy_heterogeneity == 0:
+            legitimacy_heterogeneity = False
 
         if use_mean_field == 1:
             use_mean_field = True
@@ -143,6 +149,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
                     # impact_chance = self.impact_chance,
                     legitimacy_impact=self.legitimacy_impact,
                     # incitation_threshold=self.incitation_threshold,
+                    legitimacy_heterogeneity = legitimacy_heterogeneity,
                     use_mean_field=use_mean_field,
                     legitimacy_width=legitimacy_width
                 )

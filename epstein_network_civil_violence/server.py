@@ -66,6 +66,7 @@ model_params = {
     "alpha": mesa.visualization.Slider("Alpha", 0.1, 0.0, 0.5, 0.1),
     "jail_factor": mesa.visualization.Slider("Jail Factor", 1.1, 1.0, 1.5, 0.1),
     # "impact_chance": mesa.visualization.Slider("Impact Chance", 0.5, 0.1, 1.0, 0.1),
+    "legitimacy_heterogeneity": mesa.visualization.Slider("Legitimacy Heterogeneity", 1, 0, 1, 1),
     "use_mean_field": mesa.visualization.Slider("Use Mean Field", 1, 0, 1, 1),
     "legitimacy_impact": mesa.visualization.Slider("Legitimacy Impact", 0.1, 0.0, 1, 0.1),
     "legitimacy_width": mesa.visualization.Slider("legitimacy_width", 0.1, 0.0, 0.5, 0.01),

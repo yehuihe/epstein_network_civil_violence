@@ -21,7 +21,7 @@ class Inhabitant(Citizen):
             jail_factor,
             # impact_chance,
             legitimacy_impact,
-            # incitation_threshold,
+            legitimacy_heterogeneity,
             use_mean_field,
             legitimacy_width=0.1
     ):
@@ -71,9 +71,14 @@ class Inhabitant(Citizen):
         self.actives_in_vision = 0
         self.empty_neighbors = None
 
+        # if self.random.random() < 0.2:
+        #     self.ideology_not_change = True
+        # else:
+        #     self.ideology_not_change = False
+
         #     if use mean field, then randomlize the regime_legitimacy
-        if use_mean_field:
-            self.regime_legitimacy = np.random.uniform(regime_legitimacy - legitimacy_width, regime_legitimacy + legitimacy_width)
+        if legitimacy_heterogeneity:
+            self.regime_legitimacy = np.random.uniform(max(0, regime_legitimacy - legitimacy_width), min(1, regime_legitimacy + legitimacy_width))
 
     def update_next_neighbors(self):
         next_neighbors = self.model.grid.get_neighbors(
@@ -113,7 +118,6 @@ class Inhabitant(Citizen):
             self.jail_sentence -= 1
             if self.jail_sentence == 0:
                 self.update_grievance_leave_jail()
-
             return  # no other changes or movements if agent is in jail.
 
         self.update_neighbors()
@@ -164,12 +168,14 @@ class Inhabitant(Citizen):
         self.grievance *= self.jail_factor
 
     def mean_field_spread(self):
+        # if self.ideology_not_change:
+        #     return
         if not self.closed_neighbors:
             return
 
         # Calculate the average regime_legitimacy of the surrounding neighbors
-        total_legitimacy = sum(neighbor.regime_legitimacy for neighbor in self.closed_neighbors)
-        mean_legitimacy = total_legitimacy / len(self.closed_neighbors)
+        total_legitimacy = sum(neighbor.regime_legitimacy for neighbor in self.closed_neighbors)+self.regime_legitimacy
+        mean_legitimacy = total_legitimacy / (len(self.closed_neighbors)+1)
 
         # Adjust its own regime_legitimacy based on the average regime_legitimacy and its own legitimacy_impact
         self.regime_legitimacy += self.legitimacy_impact * (mean_legitimacy - self.regime_legitimacy)
