@@ -21,7 +21,6 @@ class Inhabitant(Citizen):
             jail_factor,
             # impact_chance,
             legitimacy_impact,
-            legitimacy_heterogeneity,
             use_mean_field,
             legitimacy_width=0.1
     ):
@@ -71,14 +70,12 @@ class Inhabitant(Citizen):
         self.actives_in_vision = 0
         self.empty_neighbors = None
 
-        # if self.random.random() < 0.2:
-        #     self.ideology_not_change = True
-        # else:
-        #     self.ideology_not_change = False
+        if self.random.random() < 0.2:
+            self.ideology_not_change = True
+        else:
+            self.ideology_not_change = False
 
-        #     if use mean field, then randomlize the regime_legitimacy
-        if legitimacy_heterogeneity:
-            self.regime_legitimacy = np.random.uniform(max(0, regime_legitimacy - legitimacy_width), min(1, regime_legitimacy + legitimacy_width))
+
 
     def update_next_neighbors(self):
         next_neighbors = self.model.grid.get_neighbors(

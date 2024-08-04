@@ -3,10 +3,12 @@ import nest_asyncio
 nest_asyncio.apply()
 # add new features and mechanisms to collect data for plot
 import mesa
+import numpy as np
 
 from epstein_civil_violence.model import EpsteinCivilViolence
 from epstein_network_civil_violence.agent import Inhabitant
 from epstein_network_civil_violence.agent import Police
+
 
 class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
     """
@@ -56,7 +58,8 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             # impact_chance=0.5,
             legitimacy_impact=0.2,
             # incitation_threshold=10,
-            legitimacy_heterogeneity=True,
+            legitimacy_type="uniform",  # "uniform", "heterogeneous", "by_regions"
+            legitimacy_matrix=None,
             use_mean_field=True,
             legitimacy_width=0.1,
             cop_density_mode='constant',  # Parameter to select the change mode of cop density (constant, gradual)
@@ -82,9 +85,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.grid = mesa.space.SingleGrid(width, height, torus=True)
         self.alpha = alpha
         self.jail_factor = jail_factor
-        # self.impact_chance = impact_chance
         self.legitimacy_impact = legitimacy_impact
-        # self.incitation_threshold = incitation_threshold
         self.cop_density_mode = cop_density_mode  # Store the cop density change mode
         self.legitimacy_mode = legitimacy_mode  # Store the legitimacy change mode
         self.active_outburst = False  # Indicates if an outburst is currently happening
@@ -92,11 +93,6 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.waiting_times = []  # List to store waiting times
         self.outburst_sizes = []  # Store the size of each outburst
         self.current_outburst_size = 0  # Track the size of the current outburst
-
-        if legitimacy_heterogeneity == 1:
-            legitimacy_heterogeneity = True
-        if legitimacy_heterogeneity == 0:
-            legitimacy_heterogeneity = False
 
         if use_mean_field == 1:
             use_mean_field = True
@@ -111,7 +107,6 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             "Waiting_Times": lambda m: self.waiting_times,
             "Legitimacy": lambda m: self.legitimacy,
             "Cop_Density": lambda m: self.cop_density
-
         }
         agent_reporters = {
             "x": lambda a: a.pos[0],
@@ -128,6 +123,12 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         unique_id = 0
         if self.cop_density + self.citizen_density > 1:
             raise ValueError("Cop density + citizen density must be less than 1")
+
+        # Calculate the size of each region based on the legitimacy matrix
+        if legitimacy_matrix is not None:
+            region_height = height / legitimacy_matrix.shape[0]
+            region_width = width / legitimacy_matrix.shape[1]
+
         for contents, (x, y) in self.grid.coord_iter():
             if self.random.random() < self.cop_density:
                 cop = Police(unique_id, self, (x, y), vision=self.cop_vision)
@@ -135,21 +136,29 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
                 self.grid[x][y] = cop
                 self.schedule.add(cop)
             elif self.random.random() < (self.cop_density + self.citizen_density):
+                # Initialize legitimacy
+                regime_legitimacy = self.legitimacy
+
+                if legitimacy_type == "heterogeneous":
+                    regime_legitimacy = np.random.uniform(max(0, regime_legitimacy - legitimacy_width),
+                                                          min(1, regime_legitimacy + legitimacy_width))
+                elif legitimacy_type == "by_regions" and legitimacy_matrix is not None:
+                    region_x = int(x // region_width)
+                    region_y = int(y // region_height)
+                    regime_legitimacy = legitimacy_matrix[region_y, region_x]
+
                 citizen = Inhabitant(
                     unique_id,
                     self,
                     (x, y),
                     hardship=self.random.random(),
-                    regime_legitimacy=self.legitimacy,
+                    regime_legitimacy=regime_legitimacy,
                     risk_aversion=self.random.random(),
                     threshold=self.active_threshold,
                     vision=self.citizen_vision,
                     alpha=self.alpha,
                     jail_factor=self.jail_factor,
-                    # impact_chance = self.impact_chance,
                     legitimacy_impact=self.legitimacy_impact,
-                    # incitation_threshold=self.incitation_threshold,
-                    legitimacy_heterogeneity = legitimacy_heterogeneity,
                     use_mean_field=use_mean_field,
                     legitimacy_width=legitimacy_width
                 )
@@ -161,34 +170,29 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.datacollector.collect(self)
 
     def step(self):
-        active_count = self.count_type_citizens(self,
-                                                "Active")  # Define and calculate the current number of active citizens
-        # print(f"Active Count: {active_count}")
-
+        active_count = self.count_type_citizens(self, "Active")
         if self.iteration == 300 and self.legitimacy_mode == 'drop':
             self.legitimacy = max(0, self.legitimacy - 0.3)
         elif self.legitimacy_mode == 'gradual':
             self.legitimacy = max(0, self.legitimacy - 0.001)
         if self.cop_density_mode == 'gradual':
-            self.cop_density = max(0, self.cop_density - 0.00005)  # Gradually decrease cop density, but not below 0
+            self.cop_density = max(0, self.cop_density - 0.00005)
 
         if active_count >= 100 and not self.active_outburst:
-            if self.last_outburst_ended != 0:  # Not the first outburst
+            if self.last_outburst_ended != 0:
                 wait_time = self.schedule.steps - self.last_outburst_ended
                 self.waiting_times.append(wait_time)
-                print(f"Outburst starts, wait time recorded: {wait_time}")  # Debug output
             self.active_outburst = True
         if active_count < 100 and self.active_outburst:
             self.last_outburst_ended = self.schedule.steps
             self.active_outburst = False
-            print(f"Outburst ends at step {self.last_outburst_ended}")  # Debug output
 
         if active_count >= 100:
-            self.current_outburst_size += active_count  # Accumulate the size of the current outburst
+            self.current_outburst_size += active_count
         else:
-            if self.current_outburst_size > 0:  # An outburst has just ended
+            if self.current_outburst_size > 0:
                 self.outburst_sizes.append(self.current_outburst_size)
-                self.current_outburst_size = 0  # Reset for the next outburst
+                self.current_outburst_size = 0
 
         self.schedule.step()
         self.datacollector.collect(self)
