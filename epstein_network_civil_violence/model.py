@@ -121,12 +121,16 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
                 self.grid[x][y] = cop
                 self.schedule.add(cop)
             elif self.random.random() < (self.cop_density + self.citizen_density):
+                if (0 <= x < 50) and (0 <= y < 50):
+                    personal_regime_legitimacy = 0
+                else:
+                    personal_regime_legitimacy = self.random.random()
                 citizen = Inhabitant(
                     unique_id,
                     self,
                     (x, y),
                     hardship=self.random.random(),
-                    regime_legitimacy=self.legitimacy,
+                    regime_legitimacy = personal_regime_legitimacy,
                     risk_aversion=self.random.random(),
                     threshold=self.active_threshold,
                     vision=self.citizen_vision,
