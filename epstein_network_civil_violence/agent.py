@@ -22,6 +22,7 @@ class Inhabitant(Citizen):
             # impact_chance,
             legitimacy_impact,
             use_mean_field,
+            average_legitimacy,
             legitimacy_width=0.1
     ):
         """
@@ -70,10 +71,16 @@ class Inhabitant(Citizen):
         self.actives_in_vision = 0
         self.empty_neighbors = None
 
+        # might not use
         if self.random.random() < 0.2:
             self.ideology_not_change = True
         else:
             self.ideology_not_change = False
+
+        # stable state
+        self.average_legitimacy = average_legitimacy
+        self.legitimacy_stability_threshold = 0.005
+        self.is_stable = False
 
 
 
@@ -116,6 +123,11 @@ class Inhabitant(Citizen):
             if self.jail_sentence == 0:
                 self.update_grievance_leave_jail()
             return  # no other changes or movements if agent is in jail.
+
+
+        # Calculate the legitimacy change
+        legitimacy_difference = abs(self.regime_legitimacy - self.average_legitimacy)
+        self.is_stable = legitimacy_difference < self.legitimacy_stability_threshold
 
         self.update_neighbors()
         self.update_next_neighbors()
@@ -160,6 +172,7 @@ class Inhabitant(Citizen):
         if self.model.movement and self.empty_neighbors:
             new_pos = self.random.choice(self.empty_neighbors)
             self.model.grid.move_agent(self, new_pos)
+
 
     def update_grievance_leave_jail(self):
         self.grievance *= self.jail_factor

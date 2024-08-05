@@ -106,7 +106,8 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             "Cops": self.count_cops,
             "Waiting_Times": lambda m: self.waiting_times,
             "Legitimacy": lambda m: self.legitimacy,
-            "Cop_Density": lambda m: self.cop_density
+            "Cop_Density": lambda m: self.cop_density,
+            "Stable Agents": lambda m: self.count_stable_agents(),
         }
         agent_reporters = {
             "x": lambda a: a.pos[0],
@@ -138,6 +139,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             elif self.random.random() < (self.cop_density + self.citizen_density):
                 # Initialize legitimacy
                 regime_legitimacy = self.legitimacy
+                average_legitimacy = self.legitimacy
 
                 if legitimacy_type == "heterogeneous":
                     regime_legitimacy = np.random.uniform(max(0, regime_legitimacy - legitimacy_width),
@@ -146,6 +148,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
                     region_x = int(x // region_width)
                     region_y = int(y // region_height)
                     regime_legitimacy = legitimacy_matrix[region_y, region_x]
+                    average_legitimacy = np.mean(legitimacy_matrix)
 
                 citizen = Inhabitant(
                     unique_id,
@@ -160,6 +163,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
                     jail_factor=self.jail_factor,
                     legitimacy_impact=self.legitimacy_impact,
                     use_mean_field=use_mean_field,
+                    average_legitimacy = average_legitimacy,
                     legitimacy_width=legitimacy_width
                 )
                 unique_id += 1
@@ -199,3 +203,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.iteration += 1
         if self.iteration > self.max_iters:
             self.running = False
+
+    def count_stable_agents(self):
+        stable_agents = [agent for agent in self.schedule.agents if isinstance(agent, Inhabitant) and agent.is_stable]
+        return len(stable_agents)
