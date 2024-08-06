@@ -63,7 +63,8 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             use_mean_field=True,
             legitimacy_width=0.1,
             cop_density_mode='constant',  # Parameter to select the change mode of cop density (constant, gradual)
-            legitimacy_mode='constant'  # Parameter to select the change mode of legitimacy (constant, gradual, drop)
+            legitimacy_mode='constant',  # Parameter to select the change mode of legitimacy (constant, gradual, drop)
+            legitimacy_stability_threshold=0.01,
 
     ):
         super().__init__(
@@ -164,6 +165,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
                     legitimacy_impact=self.legitimacy_impact,
                     use_mean_field=use_mean_field,
                     average_legitimacy = average_legitimacy,
+                    legitimacy_stability_threshold = legitimacy_stability_threshold,
                     legitimacy_width=legitimacy_width
                 )
                 unique_id += 1

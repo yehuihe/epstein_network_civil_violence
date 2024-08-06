@@ -23,7 +23,8 @@ class Inhabitant(Citizen):
             legitimacy_impact,
             use_mean_field,
             average_legitimacy,
-            legitimacy_width=0.1
+            legitimacy_stability_threshold,
+            legitimacy_width=0.1,
     ):
         """
         Create a new Inhabitant.
@@ -79,7 +80,7 @@ class Inhabitant(Citizen):
 
         # stable state
         self.average_legitimacy = average_legitimacy
-        self.legitimacy_stability_threshold = 0.005
+        self.legitimacy_stability_threshold = legitimacy_stability_threshold
         self.is_stable = False
 
 
