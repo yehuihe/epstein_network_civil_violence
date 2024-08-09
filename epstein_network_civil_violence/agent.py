@@ -23,8 +23,7 @@ class Inhabitant(Citizen):
             legitimacy_impact,
             use_mean_field,
             average_legitimacy,
-            legitimacy_stability_threshold,
-            legitimacy_width=0.1,
+            legitimacy_width=0.1
     ):
         """
         Create a new Inhabitant.
@@ -80,10 +79,18 @@ class Inhabitant(Citizen):
 
         # stable state
         self.average_legitimacy = average_legitimacy
-        self.legitimacy_stability_threshold = legitimacy_stability_threshold
+        self.legitimacy_stability_threshold = 0.005
         self.is_stable = False
+    '''
+    def update_neighbors(self):
+        self.neighborhood = list(self.model.grid.get_neighborhood(self.pos, moore=True, radius=self.vision))
+        self.neighbors = self.model.grid.get_cell_list_contents(self.neighborhood)
+        self.empty_neighbors = [c for c in self.neighborhood if self.model.grid.is_cell_empty(c)]
 
-
+    def update_next_neighbors(self):
+        next_neighbors = list(self.model.grid.get_neighbors(self.pos, moore=True, radius=1))
+        self.closed_neighbors = [neighbor for neighbor in next_neighbors if neighbor.breed == "citizen"]
+    '''
 
     def update_next_neighbors(self):
         next_neighbors = self.model.grid.get_neighbors(
@@ -92,7 +99,6 @@ class Inhabitant(Citizen):
 
         self.closed_neighbors = [neighbor for neighbor in next_neighbors
                               if neighbor.breed == "citizen"]
-
 
     def update_estimated_arrest_probability(self):
         """
@@ -230,6 +236,88 @@ class Police(Cop):
                 sentence = self.random.randint(0, self.model.max_jail_term)
                 arrestee.jail_sentence = sentence
                 arrestee.condition = "Quiescent"
-        if self.model.movement and self.empty_neighbors:
-            new_pos = self.random.choice(self.empty_neighbors)
-            self.model.grid.move_agent(self, new_pos)
+                
+            # Get Moore neighborhood of the arrestee
+            arrestee_neighborhood = self.model.grid.get_neighborhood(arrestee.pos, moore=True, radius=1)
+            arrestee_empty_neighbors = [pos for pos in arrestee_neighborhood if self.model.grid.is_cell_empty(pos)]
+            # Filter to ensure the position is within the cop's vision
+            arrestee_empty_neighbors_in_vision = [pos for pos in arrestee_empty_neighbors if pos in self.neighborhood]
+            
+            if arrestee_empty_neighbors_in_vision:
+                new_pos = self.random.choice(arrestee_empty_neighbors_in_vision)
+            else:
+                new_pos = self.random.choice(self.empty_neighbors)
+        else:
+            if self.model.movement and self.empty_neighbors:
+                new_pos = self.random.choice(self.empty_neighbors)
+                self.model.grid.move_agent(self, new_pos)
+
+
+
+'''
+from mesa.space import SingleGrid
+class MultiAgentGrid(SingleGrid):
+    def __init__(self, width, height, torus=False):
+        super().__init__(width, height, torus)
+        self._grid = {}  # 使用字典来存储代理
+        for x in range(width):
+            for y in range(height):
+                self._grid[(x, y)] = set()
+
+    def place_agent(self, agent, pos):
+        """
+        Place an agent at the given position, adding to any agents already
+        in that position.
+        """
+        if self.out_of_bounds(pos):
+            raise Exception("Position out of bounds")
+        if pos not in self._grid:
+            self._grid[pos] = set()
+        self._grid[pos].add(agent)
+        agent.pos = pos
+
+    def remove_agent(self, agent):
+        """
+        Remove an agent from the grid.
+        """
+        if agent.pos in self._grid and agent in self._grid[agent.pos]:
+            self._grid[agent.pos].remove(agent)
+            if len(self._grid[agent.pos]) == 0:
+                del self._grid[agent.pos]
+            agent.pos = None
+            
+    def move_agent(self, agent, pos):
+        """
+        Move an agent to a new position, allowing multiple agents in the same position.
+        """
+        self.remove_agent(agent)
+        self.place_agent(agent, pos)
+    
+    def coord_iter(self):
+        """
+        An iterator that returns the contents and coordinates of each cell.
+        """
+        for x in range(self.width):
+            for y in range(self.height):
+                yield self._grid.get((x, y), set()), (x, y)
+    def get_neighbors(self, pos, moore, include_center=False, radius=1):
+        """
+        Return a list of neighbors to a certain point.
+        """
+        neighbors = super().get_neighbors(pos, moore, include_center, radius)
+        valid_neighbors = [neighbor for neighbor in neighbors if not self.out_of_bounds(neighbor)]
+        neighbor_contents = [self._grid.get(neighbor_pos, set()) for neighbor_pos in valid_neighbors]
+        return [agent for sublist in neighbor_contents for agent in sublist]
+
+    def get_cell_list_contents(self, cell_list):
+        """
+        Returns a list of the agents contained in the cells identified
+        in `cell_list`; cells with empty content are excluded.
+        """
+        return [agent for pos in cell_list for agent in self._grid.get(pos, set())]
+    def is_cell_empty(self, pos):
+        """
+        Returns a bool indicating whether the cell is empty.
+        """
+        return not self._grid.get(pos, set())
+'''

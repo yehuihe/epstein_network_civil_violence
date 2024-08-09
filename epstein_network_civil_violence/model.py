@@ -58,13 +58,12 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             # impact_chance=0.5,
             legitimacy_impact=0.2,
             # incitation_threshold=10,
-            legitimacy_type="uniform",  # "uniform", "heterogeneous", "by_regions"
+            legitimacy_type="basic",  # "basic", "heterogeneous", "by_regions"
             legitimacy_matrix=None,
             use_mean_field=True,
             legitimacy_width=0.1,
             cop_density_mode='constant',  # Parameter to select the change mode of cop density (constant, gradual)
-            legitimacy_mode='constant',  # Parameter to select the change mode of legitimacy (constant, gradual, drop)
-            legitimacy_stability_threshold=0.01,
+            legitimacy_mode='constant'  # Parameter to select the change mode of legitimacy (constant, gradual, drop)
 
     ):
         super().__init__(
@@ -83,6 +82,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         )
         self.iteration = 0
         self.schedule = mesa.time.RandomActivation(self)
+        # self.grid = mesa.space.MultiGrid(width, height, torus=True)
         self.grid = mesa.space.SingleGrid(width, height, torus=True)
         self.alpha = alpha
         self.jail_factor = jail_factor
@@ -94,6 +94,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
         self.waiting_times = []  # List to store waiting times
         self.outburst_sizes = []  # Store the size of each outburst
         self.current_outburst_size = 0  # Track the size of the current outburst
+        self.total_citizen = 0
 
         if use_mean_field == 1:
             use_mean_field = True
@@ -109,6 +110,7 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
             "Legitimacy": lambda m: self.legitimacy,
             "Cop_Density": lambda m: self.cop_density,
             "Stable Agents": lambda m: self.count_stable_agents(),
+            "Active_Ratio": lambda m: self.count_type_citizens(m, "Active") / self.total_citizen
         }
         agent_reporters = {
             "x": lambda a: a.pos[0],
@@ -165,12 +167,12 @@ class EpsteinNetworkCivilViolence(EpsteinCivilViolence):
                     legitimacy_impact=self.legitimacy_impact,
                     use_mean_field=use_mean_field,
                     average_legitimacy = average_legitimacy,
-                    legitimacy_stability_threshold = legitimacy_stability_threshold,
                     legitimacy_width=legitimacy_width
                 )
                 unique_id += 1
                 self.grid[x][y] = citizen
                 self.schedule.add(citizen)
+                self.total_citizen += 1
 
         self.running = True
         self.datacollector.collect(self)
