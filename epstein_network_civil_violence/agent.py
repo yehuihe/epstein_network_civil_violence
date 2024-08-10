@@ -128,7 +128,7 @@ class Inhabitant(Citizen):
         if self.jail_sentence:
             self.jail_sentence -= 1
             if self.jail_sentence == 0:
-                self.update_grievance_leave_jail()
+                self.update_regime_legitimacy_leave_jail()
             return  # no other changes or movements if agent is in jail.
 
 
@@ -181,8 +181,9 @@ class Inhabitant(Citizen):
             self.model.grid.move_agent(self, new_pos)
 
 
-    def update_grievance_leave_jail(self):
-        self.grievance *= self.jail_factor
+    def update_regime_legitimacy_leave_jail(self):
+        self.regime_legitimacy *= self.jail_factor
+        self.regime_legitimacy = max(0, min(self.regime_legitimacy, 1))
 
     def mean_field_spread(self):
         # if self.ideology_not_change:
