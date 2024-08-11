@@ -1,3 +1,6 @@
+# Code from: https://github.com/projectmesa/mesa-examples/tree/main/examples/epstein_civil_violence
+# Original code by: Mesa project contributors
+
 import mesa
 
 from .agent import Citizen, Cop
