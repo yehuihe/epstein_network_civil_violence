@@ -21,14 +21,18 @@ python run_network.py
 ### Plotting
 To generate plots, open and run all cells in the Jupyter notebook:
 ```bash
-jupyter notebook "plot(final version).ipynb"
+jupyter notebook "simulation (final version).ipynb"
 ```
 
 ### Global Sensitivity Analysis
 To perform global sensitivity analysis, open and run all cells in the Jupyter notebook:
 ```bash
-jupyter notebook GSA.ipynb
+jupyter notebook PAWN_analysis.ipynb
 ```
+
+## Acknowledgments
+
+This project uses code from the [Mesa Examples](https://github.com/projectmesa/mesa-examples/tree/main/examples/epstein_civil_violence) repository, specifically the Epstein Civil Violence model example, which are put into epstein_civil_violence/agent.py and epstein_civil_violence/model.py in our project. The original code was created and maintained by the Mesa project contributors.
 
 ## Summary
 
