@@ -246,7 +246,7 @@ class Police(Cop):
             
             if arrestee_empty_neighbors_in_vision:
                 new_pos = self.random.choice(arrestee_empty_neighbors_in_vision)
-            else:
+            elif self.empty_neighbors:
                 new_pos = self.random.choice(self.empty_neighbors)
         else:
             if self.model.movement and self.empty_neighbors:
