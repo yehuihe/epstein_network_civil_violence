@@ -1,4 +1,4 @@
-# Epstein Network Civil Violence Model
+# Mean Field Civil Violence Model
 
 ## Installation
 ### Clone the Repository
@@ -12,14 +12,8 @@ pip install -r requirements.txt
 ```
 
 ## Execution
-### Run the Simulation
-To start the simulation, execute:
-```bash
-python run_network.py
-```
-
 ### Plotting
-To generate plots, open and run all cells in the Jupyter notebook:
+To start the simulation and generate plots, open and run all cells in the Jupyter notebook:
 ```bash
 jupyter notebook "simulation (final version).ipynb"
 ```
